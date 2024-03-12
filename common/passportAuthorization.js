@@ -1,4 +1,3 @@
-import User from "../model/user.js";
 import passport from "passport";
 
 export const isAuthenticated = (req, res, next) => {

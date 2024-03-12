@@ -28,15 +28,6 @@ import order from "./model/order.js";
 const stripe = new Stripe(process.env.STRIPE_KEY);
 
 const server = Express();
-const LocalStrategy = passportLocal.Strategy;
-const JwtStrategy = passportJWT.Strategy;
-
-const opts = {};
-opts.jwtFromRequest = cookieExtractor;
-opts.secretOrKey = process.env.JWT_SECRET_KEY;
-
-// This is your Stripe CLI webhook secret for testing your endpoint locally.
-
 server.post(
   "/webhook",
   Express.raw({ type: "application/json" }),
@@ -60,13 +51,13 @@ server.post(
     // console.log(`Unhandled event type ${event.type}`);
     // console.log(`Unhandled event type ${event.data.object}`);
     switch (event.type) {
-      case 'payment_intent.succeeded':
+      case "payment_intent.succeeded":
         const paymentIntentSucceeded = event.data.object;
 
         const order = await order.findById(
           paymentIntentSucceeded.metadata.orderId
         );
-        order.paymentStatus = 'received';
+        order.paymentStatus = "received";
         await order.save();
 
         break;
@@ -79,6 +70,14 @@ server.post(
     response.send();
   }
 );
+const LocalStrategy = passportLocal.Strategy;
+const JwtStrategy = passportJWT.Strategy;
+
+const opts = {};
+opts.jwtFromRequest = cookieExtractor;
+opts.secretOrKey = process.env.JWT_SECRET_KEY;
+
+// This is your Stripe CLI webhook secret for testing your endpoint locally.
 
 // middleware
 server.use(cookieParser());
