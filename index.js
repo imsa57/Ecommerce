@@ -24,7 +24,7 @@ import "dotenv/config.js";
 import cookieParser from "cookie-parser";
 import { requiredUserData } from "./common/passportAuthorization.js";
 import Stripe from "stripe";
-import order from "./model/order.js";
+import Order from "./model/order.js";
 const stripe = new Stripe(process.env.STRIPE_KEY);
 
 const server = Express();
@@ -54,7 +54,7 @@ server.post(
       case "payment_intent.succeeded":
         const paymentIntentSucceeded = event.data.object;
 
-        const order = await order.findById(
+        const order = await Order.findById(
           paymentIntentSucceeded.metadata.orderId
         );
         order.paymentStatus = "received";

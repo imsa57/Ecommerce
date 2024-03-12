@@ -7,6 +7,7 @@ const orderSchema = new Schema({
   address: { type: Schema.Types.Mixed, required: true },
   totalPrice: { type: Number, required: true },
   status: { type: String, required: true },
+  paymentStatus: { type: String, required: true, default: "pending" },
   payment: { type: String, required: true, default: "pending" },
   orderCreatedAt: { type: Date, default: Date.now },
 });
