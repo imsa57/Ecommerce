@@ -50,16 +50,20 @@ server.post(
     // Handle the event
     // console.log(`Unhandled event type ${event.type}`);
     // console.log(`Unhandled event type ${event.data.object}`);
+    const paymentObject = event.data.object;
+    const order = await Order.findById(paymentObject.metadata.orderId);
     switch (event.type) {
       case "payment_intent.succeeded":
-        const paymentIntentSucceeded = event.data.object;
-
-        const order = await Order.findById(
-          paymentIntentSucceeded.metadata.orderId
-        );
         order.paymentStatus = "received";
         await order.save();
-
+        break;
+      case "payment_intent.canceled":
+        order.paymentStatus = "cancelled";
+        await order.save();
+        break;
+      case "payment_intent.processing":
+        order.paymentStatus = "processing";
+        await order.save();
         break;
       // ... handle other event types
       default:
@@ -202,7 +206,7 @@ server.post("/create-payment-intent", async (req, res) => {
 
   // Create a PaymentIntent with the order amount and currency
   const paymentIntent = await stripe.paymentIntents.create({
-    amount: req.body.totalPrice * 100,
+    amount: totalPrice * 100,
     currency: "inr",
     description: "Software development services",
     shipping: {
