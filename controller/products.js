@@ -36,7 +36,6 @@ export const fetchUpdateProduct = async (req, res) => {
 };
 
 export const fetchFilterproduct = async (req, res) => {
-  // let query = Product.find({ deleted: { $ne: true } });
   let query = Product.find({});
   let totalDocCount = Product.find({});
 

@@ -1,4 +1,7 @@
-import { requiredUserData } from "../common/passportAuthorization.js";
+import {
+  mailSentData,
+  requiredUserData,
+} from "../common/passportAuthorization.js";
 import User from "../model/user.js";
 import crypto from "crypto";
 import JWT from "jsonwebtoken";
@@ -65,5 +68,62 @@ export const logout = async (req, res) => {
       })
       .status(200)
       .json(null);
+      
   });
+};
+
+export const resetPasswordSession = async (req, res) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (user) {
+    const token = crypto.randomBytes(48).toString("hex");
+    user.resetPasswordToken = token;
+    await user.save();
+
+    const resetPageLink =
+      "http://localhost:8080/forgotPassword?token=" +
+      token +
+      "&email=" +
+      req.body.email;
+    const subject = "reset password for e-commerce";
+    const html = `<p>Click <a href='${resetPageLink}'>here</a> to Reset Password</p>`;
+    try {
+      const response = await mailSentData({
+        to: req.body.email,
+        subject,
+        html,
+      });
+      res.sendStatus(200);
+    } catch (error) {
+      res.status(400).json("Somthing went wrong");
+    }
+  } else {
+    res.status(400).json("wrong Email");
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  const { email, token, password } = req.body;
+  try {
+    const user = await User.findOne({ email: email }).exec();
+    if (user.resetPasswordToken === token) {
+      let salt = crypto.randomBytes(16);
+      crypto.pbkdf2(
+        password,
+        user.salt,
+        310000,
+        32,
+        "sha256",
+        async function (err, hashedPassword) {
+          user.password = hashedPassword;
+          user.resetPasswordToken = "";
+          await user.save();
+          res.status(200).json("Password Changed!");
+        }
+      );
+    } else {
+      res.status(404).json("wrong credential");
+    }
+  } catch (error) {
+    res.status(400).json(error);
+  }
 };

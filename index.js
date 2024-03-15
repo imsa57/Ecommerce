@@ -134,7 +134,7 @@ passport.use(
     done
   ) {
     try {
-      const user = await User.findOne({ email }).exec();
+      const user = await User.findOne({ email });
       if (!user) {
         return done(null, false, { message: "user not found" });
       } else if (password) {
@@ -170,7 +170,7 @@ passport.use(
   "JWT",
   new JwtStrategy(opts, async function (jwt_payload, done) {
     try {
-      const user = await User.findOne({ id: jwt_payload.id });
+      const user = await User.findById(jwt_payload);
       if (user) {
         return done(null, { ...requiredUserData(user), id: user.id });
       } else {
